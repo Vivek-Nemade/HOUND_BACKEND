@@ -19,7 +19,18 @@ const generateRefreshAccessToken = async(userId)=>{
     //    return res.status(500); throw new Error("Something went wrong while generating referesh and access token")
     }
 }
-
+const generateUserId = async () => {
+    const currentYear = new Date().getFullYear();
+    const userCountInYear = await User.countDocuments({
+      createdAt: {
+        $gte: new Date(currentYear, 0, 1),
+        $lt: new Date(currentYear + 1, 0, 1),
+      },
+    });
+  
+    const userId = `${currentYear}${userCountInYear + 1}`;
+    return userId;
+  };
 
 const registerUser = asyncHandler( async (req,res)=>{
 
@@ -55,7 +66,10 @@ const registerUser = asyncHandler( async (req,res)=>{
    }
    console.log(username, email,profileImage,coverImage,password)
 
+   const userId = await generateUserId()
+
    const user = await User.create({
+        userId,
         username: username.toLowerCase(), 
         email, 
         profileImage:profileImage.url, 
