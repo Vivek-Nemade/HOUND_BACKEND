@@ -29,8 +29,8 @@ const getCurrentUserBlogs = asyncHandler(async(req,res)=>{
 });
 
 const getAllBlogs = asyncHandler(async(req,res)=>{
-    const blogs = await Blog.find({})
-
+    const blogs = await Blog.find({}).populate({path:"owner",select:"username profileImage"})
+    console.log(blogs)
     return res.status(200).json(blogs)
 });
 

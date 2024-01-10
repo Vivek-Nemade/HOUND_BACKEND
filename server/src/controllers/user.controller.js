@@ -108,7 +108,8 @@ const loginUser = asyncHandler(async (req, res) =>{
             status(200)
             .cookie("accessToken", accessToken, options)
             .cookie("refreshToken", refreshToken, options)
-            .json(LoggedInUser + accessToken +refreshToken +"User logged in successfully")
+            // .json(LoggedInUser + accessToken +refreshToken +"User logged in successfully")
+            .json({LoggedInUser})
 })
 
 const logoutUser=asyncHandler(async (req, res) =>{
@@ -135,4 +136,6 @@ const logoutUser=asyncHandler(async (req, res) =>{
               .json("User Logged Out")
 })
 
-export { registerUser,loginUser,logoutUser}
+const getUser = asyncHandler(async (req,res) =>{});
+
+export { registerUser,loginUser,logoutUser,getUser}
