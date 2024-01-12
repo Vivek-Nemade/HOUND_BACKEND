@@ -34,10 +34,10 @@ const generateUserId = async () => {
 
 const registerUser = asyncHandler( async (req,res)=>{
 
-    const {username, email, password} =req.body;
+    const {username, email, password,fullname} =req.body;
     console.log(email,password)
 
-    if([username, email, password].some((field)=> field?.trim()==="")){
+    if([username, email, password,fullname].some((field)=> field?.trim()==="")){
         res.status(400); throw new Error("All fields must be filled")
     }
 
@@ -49,31 +49,32 @@ const registerUser = asyncHandler( async (req,res)=>{
         res.status(409); throw new Error("User already exists")
     }
     console.log(req.files)
-   const localProfileImagePath = req.files?.profileImage[0]?.path;
-   console.log(localProfileImagePath)
-   const localCoverImagePath = req.files?.coverImage[0]?.path;
+//    const localProfileImagePath = req.files?.profileImage[0]?.path;
+//    console.log(localProfileImagePath)
+//    const localCoverImagePath = req.files?.coverImage[0]?.path;
 
-   if(!localProfileImagePath){
-    res.status(400); throw new Error("Profile Image is required")
-   }
+//    if(!localProfileImagePath){
+//     res.status(400); throw new Error("Profile Image is required")
+//    }
 
 
-   const profileImage =  await uploadCloudinary(localProfileImagePath)
-   const coverImage = await uploadCloudinary(localCoverImagePath)
+//    const profileImage =  await uploadCloudinary(localProfileImagePath)
+//    const coverImage = await uploadCloudinary(localCoverImagePath)
 
-   if(!profileImage){
-    res.status(400); throw new Error("Profile Image is required")
-   }
-   console.log(username, email,profileImage,coverImage,password)
+//    if(!profileImage){
+//     res.status(400); throw new Error("Profile Image is required")
+//    }
+//    console.log(username, email,profileImage,coverImage,password)
 
    const userId = await generateUserId()
 
    const user = await User.create({
         userId,
         username: username.toLowerCase(), 
-        email, 
-        profileImage:profileImage.url, 
-        coverImage:coverImage?.url || "",
+        email,
+        fullname,
+        // profileImage:profileImage.url, 
+        // coverImage:coverImage?.url || "",
         password
     })
 
@@ -152,4 +153,34 @@ const logoutUser=asyncHandler(async (req, res) =>{
 
 const getUser = asyncHandler(async (req,res) =>{});
 
-export { registerUser,loginUser,logoutUser,getUser}
+const uploadUserimages=asyncHandler(async (req,res) =>{
+    const userID ="659e73d9a8095b5620115d90"
+    try {
+        const localProfileImagePath = req.files?.profileImage[0]?.path;
+        const localCoverImagePath = req.files?.coverImage[0]?.path;
+    
+    
+        const profileImage =  await uploadCloudinary(localProfileImagePath)
+        const coverImage = await uploadCloudinary(localCoverImagePath)
+    
+        const updatedUser = await User.findByIdAndUpdate(
+            userID,
+            {
+                $set:{
+                    profileImage: profileImage.url,
+                    coverImage: coverImage.url
+                }
+            },
+            {
+                new: true,
+            }
+            ).select('profileImage coverImage')
+    
+            return res.status(201).json(updatedUser);
+    } catch (error) {
+        console.error(error.message);
+        return res.status(500).json(error);
+    }
+});
+
+export { registerUser,loginUser,logoutUser,getUser,uploadUserimages}

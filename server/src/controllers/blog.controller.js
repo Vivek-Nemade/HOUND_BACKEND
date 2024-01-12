@@ -29,9 +29,11 @@ const getCurrentUserBlogs = asyncHandler(async(req,res)=>{
 });
 
 const getAllBlogs = asyncHandler(async(req,res)=>{
-    const blogs = await Blog.find({}).populate({path:"owner",select:"username profileImage"})
+    const blogs = await Blog.find({}).populate({path:"owner",select:"username profileImage"}).limit(10)
+    const count = await Blog.countDocuments();
+    const currentLength = blogs.length;
     console.log(blogs)
-    return res.status(200).json(blogs)
+    return res.status(200).json({blogs,count,currentLength})
 });
 
 // try catch is pending 
@@ -79,5 +81,8 @@ const getBlog = asyncHandler(async (req, res) => {
     // console.log(blog)
     return res.status(200).json(blog)
 })
+
+
+
 
 export {createBlog,getCurrentUserBlogs,getAllBlogs,updateBlog,getBlog}
