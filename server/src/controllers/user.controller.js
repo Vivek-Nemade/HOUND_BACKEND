@@ -34,15 +34,15 @@ const generateUserId = async () => {
 
 const registerUser = asyncHandler( async (req,res)=>{
 
-    const {username, email, password,fullname} =req.body;
+    const {userName, email, password,fullName} =req.body;
     console.log(email,password)
 
-    if([username, email, password,fullname].some((field)=> field?.trim()==="")){
+    if([userName, email, password,fullName].some((field)=> field?.trim()==="")){
         res.status(400); throw new Error("All fields must be filled")
     }
 
     const existingUser = await User.findOne({
-        $or: [{username, email}]
+        $or: [{userName, email}]
     })
 
     if(existingUser){
@@ -70,9 +70,9 @@ const registerUser = asyncHandler( async (req,res)=>{
 
    const user = await User.create({
         userId,
-        username: username.toLowerCase(), 
+        userName: userName.toLowerCase(), 
         email,
-        fullname,
+        fullName,
         // profileImage:profileImage.url, 
         // coverImage:coverImage?.url || "",
         password
@@ -151,7 +151,12 @@ const logoutUser=asyncHandler(async (req, res) =>{
               .json("User Logged Out")
 })
 
-const getUser = asyncHandler(async (req,res) =>{});
+const getUser = asyncHandler(async (req,res) =>{
+
+    const user = await User.findOne(req.user?._id).select("-password -refreshToken")
+
+    return res.status(200).json(user);
+});
 
 const uploadUserimages=asyncHandler(async (req,res) =>{
     const userID ="659e73d9a8095b5620115d90"
@@ -183,4 +188,31 @@ const uploadUserimages=asyncHandler(async (req,res) =>{
     }
 });
 
-export { registerUser,loginUser,logoutUser,getUser,uploadUserimages}
+const updateUserData = asyncHandler(async(req,res)=>{
+    const {github,linkedln,youtube,website,twitter,bio,userName,email,fullName } = req.body;
+    const currentUserId = req.user?._id;
+
+    if(!currentUserId) {
+        return res.status(404).json("User not found");
+    }
+
+    const user = await User.findByIdAndUpdate(currentUserId,
+             {
+                $set:{
+                    userName,
+                    email,
+                    fullName,
+                    github,
+                    linkedln,
+                    youtube,
+                    website,
+                    twitter,
+                    bio
+                }
+             },{new :true}).select("-password -refreshToken")
+
+             return res.status(200).json({user, message:"User updated successfully"})
+
+})
+
+export { registerUser,loginUser,logoutUser,getUser,uploadUserimages,updateUserData}

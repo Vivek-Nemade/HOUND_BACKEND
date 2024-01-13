@@ -7,14 +7,14 @@ const userSchema = new Schema({
         type: String,
         unique: true,
     },
-    username: {
+    userName: {
         type : String,
         required : true,
         unique : true,
         lowercase : true,
         index: true
     },
-    fullname: {
+    fullName: {
         type : String,
         required : true,
         lowercase : true,
@@ -25,6 +25,30 @@ const userSchema = new Schema({
         required : true,
         unique : true,
         lowercase : true,
+    },
+    linkedin: {
+        type : String,
+    },
+    github: {
+        type : String,
+    },
+    youtube: {
+        type : String,
+    },
+    website: {
+        type : String,
+    },
+    twitter: {
+        type : String,
+    },
+    bio: {
+        type : String,
+    },
+    city: {
+        type : String,
+    },
+    country: {
+        type : String,
     },
     profileImage: {
         type : String,
@@ -57,8 +81,8 @@ userSchema.methods.generatAccessToken = function(){
         {
             _id: this._id,
             email:this.email,
-            username: this.username,
-            fullname: this.fullname
+            userName: this.userName,
+            fullName: this.fullName
         },
         process.env.ACCESS_TOKEN_SECRET,
         {

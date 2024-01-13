@@ -1,7 +1,7 @@
 
 import express from "express"
 import {upload} from "../middlewares/multer.middleware.js"
-import { loginUser, logoutUser, registerUser, uploadUserimages } from "../controllers/user.controller.js";
+import { loginUser, logoutUser, registerUser, updateUserData, uploadUserimages } from "../controllers/user.controller.js";
 import { verifyJwt } from "../middlewares/auth.middelware.js";
 
 const router = express.Router();
@@ -20,7 +20,7 @@ router.route('/register').post(
 
 router.route('/login').post(loginUser)
 router.route('/logout').post(verifyJwt,logoutUser)
-router.route('/upload').post(
+router.route('/upload-images').post(
     verifyJwt,
     upload.fields([
         { 
@@ -33,6 +33,8 @@ router.route('/upload').post(
         }]), 
     uploadUserimages
     )
+
+router.route('/update-account-details').patch(verifyJwt,updateUserData)
 
 
 
