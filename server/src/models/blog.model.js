@@ -20,6 +20,10 @@ const blogSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "User"
     },
+    visitedCount:{
+        type: Number,
+        default: 0
+    }
     // comments:[{user:String, text:String}]
 },{timestamps: true})
 

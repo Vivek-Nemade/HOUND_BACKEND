@@ -29,11 +29,15 @@ const getCurrentUserBlogs = asyncHandler(async(req,res)=>{
 });
 
 const getAllBlogs = asyncHandler(async(req,res)=>{
-    const blogs = await Blog.find({}).populate({path:"owner",select:"username profileImage"}).limit(10)
-    const count = await Blog.countDocuments();
-    const currentLength = blogs.length;
-    console.log(blogs)
-    return res.status(200).json({blogs,count,currentLength})
+    try {
+        const blogs = await Blog.find({}).populate({path:"owner",select:"userName profileImage"}).limit(10)
+        const count = await Blog.countDocuments();
+        const currentLength = blogs.length;
+        // console.log(blogs)
+        return res.status(200).json({blogs,count,currentLength})
+    } catch (error) {
+        res.json(error.message);
+    }
 });
 
 // try catch is pending 

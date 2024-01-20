@@ -1,6 +1,7 @@
 import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asynchandler.js";
-import {uploadCloudinary} from "../utils/cloudinary.js"
+import {uploadCloudinary} from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken"
 
 
 const generateRefreshAccessToken = async(userId)=>{
@@ -12,7 +13,7 @@ const generateRefreshAccessToken = async(userId)=>{
        user.refreshToken = refreshToken;
        
        await user.save({validateBeforeSave: false});
-        console.log(user)
+        // console.log(user)
        return {accessToken, refreshToken}
     } catch (error) {
         console.error(error.message)
@@ -108,23 +109,34 @@ const loginUser = asyncHandler(async (req, res) =>{
     }
 
     const {accessToken, refreshToken} = await generateRefreshAccessToken(user._id)
-    console.log(accessToken, refreshToken)
+    console.log(refreshToken)
 
 
     const LoggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
+    // if(req.cookies[`${user._id}`]){
+    //     console.log(user._id)
+    //     req.cookies[`${user._id}`]="";
+    // }
+    const expiryDate = new Date(Date.now() + 3600000)
     const options = {
-        httpOnly : true,
-        secure : true
+        httpOnly: true,
+        // sameSite:"lax",
+        expires: expiryDate
     }
 
-
-    return res.
-            status(200)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", refreshToken, options)
-            // .json(LoggedInUser + accessToken +refreshToken +"User logged in successfully")
-            .json({LoggedInUser})
+    res
+    .cookie('accessToken', accessToken, {maxAge: 3000000, httpOnly: true})
+    // .cookie("refreshToken", refreshToken, options)
+    .cookie("refreshToken", refreshToken, {maxAge: 86400000, httpOnly: true})
+    // return res.
+    //         status(200)
+    //         .cookie("accessToken", accessToken, options)
+    //         .cookie("refreshToken", refreshToken, options)
+    //         // .json(LoggedInUser + accessToken +refreshToken +"User logged in successfully")
+    //         .json({LoggedInUser})
+    // console.log(accessToken,"and",refreshToken)
+    return res.status(200).json({LoggedInUser})
 })
 
 const logoutUser=asyncHandler(async (req, res) =>{
@@ -152,10 +164,10 @@ const logoutUser=asyncHandler(async (req, res) =>{
 })
 
 const getUser = asyncHandler(async (req,res) =>{
-
-    const user = await User.findOne(req.user?._id).select("-password -refreshToken")
-
-    return res.status(200).json(user);
+    // console.log(req.user)
+    const user = await User.findOne({_id:req?.user?._id}).select("-password -refreshToken")
+    // console.log(user.username)
+    return res.status(200).json({user, valid:true});
 });
 
 const uploadUserimages=asyncHandler(async (req,res) =>{
@@ -215,4 +227,48 @@ const updateUserData = asyncHandler(async(req,res)=>{
 
 })
 
-export { registerUser,loginUser,logoutUser,getUser,uploadUserimages,updateUserData}
+const refreshAcessToken =asyncHandler (async(req,res)=>{
+    const incomingRefreshToken = req.cookies?.refreshToken
+    let exist = false;
+    if (!incomingRefreshToken) {
+        return res.status(401).json({message: 'Refresh token not available, Unauthorized request',valid: false});
+    }
+    
+    
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+        console.log(decodedToken);
+        const user = await User.findById(decodedToken?._id)
+        console.log({'db-refresh token':user.refreshToken, "browser-refresh token":incomingRefreshToken})
+        if(!user) {
+           return res.status(401).json({ message: 'Invalid refresh token', valid: false })
+        }
+        if(incomingRefreshToken !==user?.refreshToken) {
+                return res.status(401).json({ message: 'Invalid refresh token', valid: false })
+        }
+            const {accessToken, refreshToken} = await generateRefreshAccessToken(user._id)
+        console.log(`new refresh token: ${refreshToken}`)
+        console.log(`new access token: ${accessToken}`)
+        
+         res.
+                status(200)
+                .cookie("accessToken",accessToken,{maxAge: 3000000, httpOnly: true})
+                .cookie("refreshToken",refreshToken,{maxAge: 86400000, httpOnly: true})
+                .json({ message: 'Access Token Refreshed', valid: true })
+        
+                exist = true
+    
+    // catch(error){
+    //     console.error('Error refreshing access token:', error);
+    //     return res.status(401).json({ error: error.message, valid: false });
+    // }  
+        
+
+        
+    
+    // console.log(exist)
+    return exist;
+            // res.status(401); throw new Error("Invalid token")
+            // return res.status(401).json({error: error.message, exists: false});
+    })
+
+export { registerUser,loginUser,logoutUser,getUser,uploadUserimages,updateUserData,refreshAcessToken}
