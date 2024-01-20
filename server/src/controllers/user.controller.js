@@ -202,7 +202,7 @@ const uploadUserimages=asyncHandler(async (req,res) =>{
 
 const updateUserData = asyncHandler(async(req,res)=>{
     const {github,linkedln,youtube,website,twitter,bio,userName,email,fullName } = req.body;
-    const currentUserId = req.user?._id;
+    const currentUserId = req.user?.userId;
 
     if(!currentUserId) {
         return res.status(404).json("User not found");

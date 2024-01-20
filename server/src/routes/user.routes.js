@@ -34,7 +34,7 @@ router.route('/upload-images').post(
     uploadUserimages
     )
 
-router.route('/update-account-details').patch(verifyJwt,updateUserData)
+router.route('/update-account-details/:userId').patch(verifyJwt,updateUserData)
 router.route('/current-user').get(verifyJwt,getUser)
 
 
