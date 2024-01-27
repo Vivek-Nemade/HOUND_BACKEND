@@ -24,7 +24,6 @@ const blogSchema = new Schema({
         type: Number,
         default: 0
     }
-    // comments:[{user:String, text:String}]
 },{timestamps: true})
 
 
