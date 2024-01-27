@@ -30,7 +30,7 @@ const getCurrentUserBlogs = asyncHandler(async(req,res)=>{
 
 const getAllBlogs = asyncHandler(async(req,res)=>{
     try {
-        const blogs = await Blog.find({}).populate({path:"owner",select:"userName profileImage"}).limit(10)
+        const blogs = await Blog.find({}).populate({path:"owner",select:"userName profileImage"}).sort({createdAt:-1})
         const count = await Blog.countDocuments();
         const currentLength = blogs.length;
         // console.log(blogs)
@@ -86,7 +86,27 @@ const getBlog = asyncHandler(async (req, res) => {
     return res.status(200).json(blog)
 })
 
+const deleteBlog = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const blogId =req.params?.blogId;
+
+
+    const blogOwner = await Blog.findOne({owner: userId});
+
+    if(!blogOwner){
+        return res.status(401).json("You are not allowed to update this blog")
+    }
+
+    const deletedBlog = await Blog.findByIdAndDelete(blogId)
+    if(!deletedBlog){
+        res.status(400).json("Something went wrong while deleting blog")
+    }
+
+    return res.status(200).json("blog deleted successfully")
+
+
+});
 
 
 
-export {createBlog,getCurrentUserBlogs,getAllBlogs,updateBlog,getBlog}
+export {createBlog,getCurrentUserBlogs,getAllBlogs,updateBlog,getBlog,deleteBlog}

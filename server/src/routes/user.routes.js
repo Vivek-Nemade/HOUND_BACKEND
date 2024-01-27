@@ -3,6 +3,7 @@ import express from "express"
 import {upload} from "../middlewares/multer.middleware.js"
 import { getUser, loginUser, logoutUser, registerUser, updateUserData, uploadUserimages } from "../controllers/user.controller.js";
 import { verifyJwt } from "../middlewares/auth.middelware.js";
+import { Likedblogs } from "../controllers/like.controller.js";
 
 const router = express.Router();
 
@@ -36,6 +37,7 @@ router.route('/upload-images').post(
 
 router.route('/update-account-details').patch(verifyJwt,updateUserData)
 router.route('/current-user').get(verifyJwt,getUser)
+router.route('/current-user/liked-Blogs').get(verifyJwt,Likedblogs)
 
 
 
