@@ -171,21 +171,27 @@ const getUser = asyncHandler(async (req,res) =>{
 });
 
 const uploadUserimages=asyncHandler(async (req,res) =>{
-    const userID ="659e73d9a8095b5620115d90"
+    const userID = req.user?._id;
     try {
         const localProfileImagePath = req.files?.profileImage[0]?.path;
-        const localCoverImagePath = req.files?.coverImage[0]?.path;
-    
+        const localCoverImagePath = req.files?.coverImage?.[0]?.path;
+        console.log(localProfileImagePath);
+        console.log(localCoverImagePath);
     
         const profileImage =  await uploadCloudinary(localProfileImagePath)
-        const coverImage = await uploadCloudinary(localCoverImagePath)
+        let coverImage;
+
+        if (localCoverImagePath) {
+            coverImage = await uploadCloudinary(localCoverImagePath);
+        }
+        // const coverImage = await uploadCloudinary(localCoverImagePath)
     
         const updatedUser = await User.findByIdAndUpdate(
             userID,
             {
                 $set:{
                     profileImage: profileImage.url,
-                    coverImage: coverImage.url
+                    coverImage: coverImage ? coverImage.url : null,
                 }
             },
             {
@@ -196,7 +202,7 @@ const uploadUserimages=asyncHandler(async (req,res) =>{
             return res.status(201).json(updatedUser);
     } catch (error) {
         console.error(error.message);
-        return res.status(500).json(error);
+        return res.status(500).json(error.message);
     }
 });
 
