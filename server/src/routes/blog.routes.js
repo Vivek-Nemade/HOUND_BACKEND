@@ -1,7 +1,7 @@
 import express from "express";
 import { verifyJwt } from "../middlewares/auth.middelware.js";
 import { createBlog, deleteBlog, getAllBlogs, getBlog, getCurrentUserBlogs, updateBlog } from "../controllers/blog.controller.js";
-import { likeUnlikeBlog } from "../controllers/like.controller.js";
+import { getBlogLikeStatusOfLoggedInUser, likeUnlikeBlog } from "../controllers/like.controller.js";
 import { addComment, deleteComment, getBlogComments, updateComment } from "../controllers/comment.controller.js";
 const router = express.Router();
 
@@ -15,6 +15,7 @@ router.route("/currrent-blog/:blogId").delete(verifyJwt,deleteBlog)
 
 //Likes Routes
 router.route("/currrent-blog/:blogId").patch(verifyJwt,likeUnlikeBlog)
+router.route("/currrent-blog/:blogId").get(verifyJwt,getBlogLikeStatusOfLoggedInUser)
 
 //Comments Routes
 router.route("/currrent-blog/:blogId/add-comment").post(verifyJwt,addComment)

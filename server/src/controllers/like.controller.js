@@ -57,4 +57,23 @@ const Likedblogs = asyncHandler(async(req,res)=>{
 
    return res.status(200).json({success:true,blogs,message:"Fetched Liked Blogs successfully"})
 })
-export {likeUnlikeBlog,Likedblogs}
+
+const getBlogLikeStatusOfLoggedInUser = asyncHandler(async(req,res)=>{
+    const userId = req.user._id;
+    const blogId = req.params?.blogId;
+
+    const blog = await Blog.findById(blogId);
+    if(!blog){
+        return res.status(404).json("Blog not found")
+    }
+
+    const ExistingLike = await Like.findOne({blog:blogId,likedBy:userId})
+    // console.log(ExistingLike)
+    if(ExistingLike===null){
+        return res.status(200).json(false)
+    }
+    // console.log(ExistingLike.isLiked)
+    return res.status(200).json(ExistingLike.isLiked)
+
+});
+export {likeUnlikeBlog,Likedblogs,getBlogLikeStatusOfLoggedInUser}

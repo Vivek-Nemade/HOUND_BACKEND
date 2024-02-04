@@ -1,3 +1,4 @@
+import { Blog } from "../models/blog.model.js";
 import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asynchandler.js";
 import {uploadCloudinary} from "../utils/cloudinary.js";
@@ -236,6 +237,7 @@ const updateUserData = asyncHandler(async(req,res)=>{
 
 const refreshAcessToken =asyncHandler (async(req,res)=>{
     const incomingRefreshToken = req.cookies?.refreshToken
+    console.log(incomingRefreshToken)
     let exist = false;
     if (!incomingRefreshToken) {
         return res.status(401).json({message: 'Refresh token not available, Unauthorized request',valid: false});
@@ -278,4 +280,23 @@ const refreshAcessToken =asyncHandler (async(req,res)=>{
             // return res.status(401).json({error: error.message, exists: false});
     })
 
-export { registerUser,loginUser,logoutUser,getUser,uploadUserimages,updateUserData,refreshAcessToken}
+const getUserByParams = asyncHandler(async (req, res) => {
+    try {
+        const {userId}  = req?.params;
+        // console.log(userId)
+        const user = await User
+                        .findById({_id:userId})
+                        .select("-password -refreshToken")
+        // const user = await User.populate(userData,
+        //     [{path:'follower', select: "userName profileImage"},
+        //     {path:'following', select: "userName profileImage"},]
+        //     )     
+        const blogs = await Blog.find({owner:userId})           
+        console.log(blogs)
+        return res.status(200).json({user,blogs});
+    } catch (error) {
+       return res.status(400).json(error.message)
+    }
+})
+
+export { registerUser,loginUser,logoutUser,getUser,uploadUserimages,updateUserData,refreshAcessToken,getUserByParams}

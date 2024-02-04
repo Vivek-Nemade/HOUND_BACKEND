@@ -21,20 +21,40 @@ const createBlog = asyncHandler(async(req,res)=>{
 
 
 const getCurrentUserBlogs = asyncHandler(async(req,res)=>{
-    const userId = req.user._id;
-
-    const blogs = await Blog.find({owner: userId})
-    return res.status(200).json( blogs)
+    try {
+        const userId = req.user._id;
+        
+        const blogs = await Blog.find({owner: userId})
+        return res.status(200).json( blogs)
+    } catch (error) {
+        return res.json(error.message)
+    }
 
 });
 
 const getAllBlogs = asyncHandler(async(req,res)=>{
     try {
-        const blogs = await Blog.find({}).populate({path:"owner",select:"userName profileImage"}).sort({createdAt:-1})
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+
+        const blogs = await Blog.find({})
+        .populate({path:"owner",select:"userName profileImage"})
+        .sort({createdAt:-1})
+        .skip((page-1)*limit)
+        .limit(limit)
+
+
         const count = await Blog.countDocuments();
+        const totalPages = Math.ceil(count / limit);
         const currentLength = blogs.length;
         // console.log(blogs)
-        return res.status(200).json({blogs,count,currentLength})
+        return res.status(200).json({
+            blogs,
+            count,
+            currentLength,
+            totalPages,
+            currentPage: page,
+        })
     } catch (error) {
         res.json(error.message);
     }
@@ -77,7 +97,9 @@ const updateBlog = asyncHandler(async(req,res)=>{
 
 const getBlog = asyncHandler(async (req, res) => {
     const blogId =req.params?.blogId;
-    const blog = await Blog.findById(blogId)
+    const blog = await Blog
+                       .findById(blogId)
+                       .populate({path:"owner",select:"userName profileImage"})
 
     if(!blog) {
         res.status(404).json("Blog not found")
