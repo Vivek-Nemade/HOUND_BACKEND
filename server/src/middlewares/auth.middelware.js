@@ -44,7 +44,7 @@ export const verifyJwt =async(req, res, next) => {
             //     next()
             //     return;
             // }
-           if (refreshAcessToken(req,res)){
+           if(refreshAcessToken(req,res)){
             console.log("refreshAcessToken used" )
             next()
             return;
