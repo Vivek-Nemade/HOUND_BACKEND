@@ -22,6 +22,14 @@ const addComment =asyncHandler(async(req,res)=>{
         content: content,
         commentBy:userId,
     })
+    await Blog.findByIdAndUpdate(blogId,
+        {
+            $inc:{
+                commentsCount : 1
+            }
+        },
+        {new: true}
+    );
        return res.status(200).json({sucess: true, data: newComment,message:"Comment created successfully"})
 
 })
@@ -101,6 +109,14 @@ const deleteComment =asyncHandler(async(req,res) => {
     }
 
     const deletedComment = await Comment.findByIdAndDelete(commentId)
+    await Blog.findByIdAndUpdate(blogId,
+        {
+            $inc:{
+                commentsCount : -1
+            }
+        },
+        {new: true}
+    );
 
     if(!deletedComment){
         res.status(400).json("Something went wrong while deleting comment")

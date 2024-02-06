@@ -34,7 +34,7 @@ import { refreshAcessToken } from "../controllers/user.controller.js";
 export const verifyJwt =async(req, res, next) => {
     
     try {
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","")
+        const token = req?.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","")
         
         if(!token){
             console.log("access token not found")
