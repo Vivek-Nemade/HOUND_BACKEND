@@ -55,5 +55,17 @@ const removeFollower = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'You are not following this user' });
 })
 
+const getFollowersAndFollowing = asyncHandler(async (req, res) => {
+    const userId = req?.user?._id;
 
-export {addFollow,removeFollower,getFollowStatus}
+    const followers = await Subscribe.find({following:userId}).select("follower")
+                                     .populate({path:"follower"})
+    const following = await Subscribe.find({follower:userId}).select("following")
+                                    .populate({path:"following"})
+
+    return res.status(200).json({followers,following})
+
+})
+
+
+export {addFollow,removeFollower,getFollowStatus,getFollowersAndFollowing}

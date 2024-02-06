@@ -35,7 +35,7 @@ const getCurrentUserBlogs = asyncHandler(async(req,res)=>{
 const getAllBlogs = asyncHandler(async(req,res)=>{
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = 10;
+        const limit = 5;
 
         const blogs = await Blog.find({})
         .populate({path:"owner",select:"userName profileImage"})
@@ -128,6 +128,7 @@ const deleteBlog = asyncHandler(async (req, res) => {
 
 
 });
+
 
 
 

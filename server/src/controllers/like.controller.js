@@ -68,7 +68,7 @@ const getBlogLikeStatusOfLoggedInUser = asyncHandler(async(req,res)=>{
     }
 
     const ExistingLike = await Like.findOne({blog:blogId,likedBy:userId})
-    // console.log(ExistingLike)
+    console.log("ExistingLike",ExistingLike)
     if(ExistingLike===null){
         return res.status(200).json(false)
     }
@@ -77,3 +77,91 @@ const getBlogLikeStatusOfLoggedInUser = asyncHandler(async(req,res)=>{
 
 });
 export {likeUnlikeBlog,Likedblogs,getBlogLikeStatusOfLoggedInUser}
+
+
+
+
+// {
+//     $lookup: {
+//       from: 'blogs',
+//       localField: 'blog',
+//       foreignField: '_id',
+//       as: "blog_details"
+//     }
+//   },
+//   {
+//     $addFields: {
+//       blog_details: {
+//         $arrayElemAt: ["$blog_details", 0]
+//       }
+//     }
+//   }
+
+
+
+
+
+//working likesCount per day 
+[
+    {
+      $match: {
+        createdAt:{
+          $gte: new Date('2024-02-01'),
+          $lte: new Date('2024-02-06'),
+        }
+      }
+    },
+    {
+        $lookup: {
+            from: 'blogs',
+            localField: 'blog',
+            foreignField: '_id',
+            as: 'blogData',
+          },
+    },
+    {
+          $match: {
+            // 'blogData.owner':ObjectId('65ad3c76bd365c2912669e26'),
+          },
+    },
+    {
+      $group:{
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        likeCount: { $sum: 1 }
+      }
+    }
+  ]
+
+
+
+// commentsCount
+
+[
+    {
+      $match: {
+        createdAt:{
+          $gte: new Date('2024-02-01'),
+          $lte: new Date('2024-02-07'),
+        }
+      }
+    },
+    {
+        $lookup: {
+            from: 'blogs',
+            localField: 'blog',
+            foreignField: '_id',
+            as: 'blogData',
+          },
+    },
+    {
+          $match: {
+            // 'blogData.owner':ObjectId('65bce02a1bff348cbeace90c'),
+          },
+    },
+    {
+      $group:{
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        commentCount: { $sum: 1 }
+      }
+    }
+  ]

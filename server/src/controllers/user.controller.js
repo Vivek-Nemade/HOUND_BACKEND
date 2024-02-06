@@ -1,4 +1,6 @@
 import { Blog } from "../models/blog.model.js";
+import { Comment } from "../models/comment.model.js";
+import { Like } from "../models/like.model.js";
 import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asynchandler.js";
 import {uploadCloudinary} from "../utils/cloudinary.js";
@@ -127,6 +129,7 @@ const loginUser = asyncHandler(async (req, res) =>{
     }
 
     res
+    // .cookie('accessToken', accessToken, {maxAge: 30000, httpOnly: true})
     .cookie('accessToken', accessToken, {maxAge: 3000000, httpOnly: true})
     // .cookie("refreshToken", refreshToken, options)
     .cookie("refreshToken", refreshToken, {maxAge: 86400000, httpOnly: true})
@@ -261,6 +264,7 @@ const refreshAcessToken =asyncHandler (async(req,res)=>{
          res.
                 status(200)
                 .cookie("accessToken",accessToken,{maxAge: 3000000, httpOnly: true})
+                // .cookie("accessToken",accessToken,{maxAge: 30000, httpOnly: true})
                 .cookie("refreshToken",refreshToken,{maxAge: 86400000, httpOnly: true})
                 .json({ message: 'Access Token Refreshed', valid: true })
         
@@ -299,4 +303,117 @@ const getUserByParams = asyncHandler(async (req, res) => {
     }
 })
 
-export { registerUser,loginUser,logoutUser,getUser,uploadUserimages,updateUserData,refreshAcessToken,getUserByParams}
+
+const getUserLikesAndCommentsCount = asyncHandler(async (req, res) => {
+    const fromDate = req?.query?.from;
+    const toDate = req?.query?.to;
+    const userId = req?.user?._id;
+    const toDateObj = new Date(toDate);
+    toDateObj.setHours(23, 59, 59, 999);
+ 
+      const likesArray = await  Like.aggregate([
+        {
+          $match: {
+            createdAt:{
+              $gte: new Date(fromDate),
+              $lte: new Date(toDateObj),
+            }
+          }
+        },
+        {
+            $lookup: {
+                from: 'blogs',
+                localField: 'blog',
+                foreignField: '_id',
+                as: 'blogData',
+              },
+        },
+        {
+              $match: {
+                'blogData.owner':userId,
+              },
+        },
+        {
+          $group:{
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            likeCount: { $sum: 1 }
+          }
+        }
+      ])
+      
+      const commentsArray = await Comment.aggregate([
+        {
+          $match: {
+            createdAt:{
+              $gte: new Date(fromDate),
+              $lte: new Date(toDateObj),
+            }
+          }
+        },
+        {
+            $lookup: {
+                from: 'blogs',
+                localField: 'blog',
+                foreignField: '_id',
+                as: 'blogData',
+              },
+        },
+        {
+              $match: {
+                'blogData.owner':userId,
+              },
+        },
+        {
+          $group:{
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            commentCount: { $sum: 1 }
+          }
+        }
+      ])
+
+      const  result =[]
+
+      const ifDateExist =(_id)=> result.find(item=>item._id === _id)
+
+      for(const item of likesArray){
+        const ifExist = ifDateExist(item._id);
+    
+        if(ifExist){
+            ifExist.likeCount = item.likeCount
+        }else{
+            result.push({_id: item._id, likeCount: item.likeCount})
+        }
+    }
+
+
+    for(const item of commentsArray){
+        const ifExist = ifDateExist(item._id);
+    
+        if(ifExist){
+            ifExist.commentCount = item.commentCount
+        }else{
+            result.push({_id: item._id, commentCount: item.commentCount})
+        }
+    }
+
+
+
+    //   const counts = [...likesArray,...commentsArray]
+ 
+
+     return res.status(200).json(result)
+    // res.status(200).json({likesArray,commentsArray})
+
+    
+
+});
+
+export { registerUser,
+        loginUser,
+        logoutUser,
+        getUser,
+        uploadUserimages,
+        updateUserData,
+        refreshAcessToken,
+        getUserByParams,
+        getUserLikesAndCommentsCount}
