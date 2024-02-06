@@ -381,7 +381,7 @@ const getUserLikesAndCommentsCount = asyncHandler(async (req, res) => {
         if(ifExist){
             ifExist.likeCount = item.likeCount
         }else{
-            result.push({_id: item._id, likeCount: item.likeCount})
+            result.push({_id: item._id, likeCount: item.likeCount,commentCount:0})
         }
     }
 
@@ -392,7 +392,7 @@ const getUserLikesAndCommentsCount = asyncHandler(async (req, res) => {
         if(ifExist){
             ifExist.commentCount = item.commentCount
         }else{
-            result.push({_id: item._id, commentCount: item.commentCount})
+            result.push({_id: item._id,likeCount:0, commentCount: item.commentCount})
         }
     }
 
