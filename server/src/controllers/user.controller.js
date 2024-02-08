@@ -304,21 +304,125 @@ const getUserByParams = asyncHandler(async (req, res) => {
 })
 
 
+// const getUserLikesAndCommentsCount = asyncHandler(async (req, res) => {
+//     const fromDate = req?.query?.from;
+//     const toDate = req?.query?.to;
+//     const userId = req?.user?._id;
+//     const toDateObj = new Date(toDate);
+//     toDateObj.setHours(23, 59, 59, 999);
+ 
+//       const likesArray = await  Like.aggregate([
+//         {
+//           $match: {
+//             createdAt:{
+//               $gte: new Date(fromDate),
+//               $lte: new Date(toDateObj),
+//             }
+//           }
+//         },
+//         {
+//             $lookup: {
+//                 from: 'blogs',
+//                 localField: 'blog',
+//                 foreignField: '_id',
+//                 as: 'blogData',
+//               },
+//         },
+//         {
+//               $match: {
+//                 'blogData.owner':userId,
+//               },
+//         },
+//         {
+//           $group:{
+//             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+//             likeCount: { $sum: 1 }
+//           }
+//         }
+//       ])
+      
+//       const commentsArray = await Comment.aggregate([
+//         {
+//           $match: {
+//             createdAt:{
+//               $gte: new Date(fromDate),
+//               $lte: new Date(toDateObj),
+//             }
+//           }
+//         },
+//         {
+//             $lookup: {
+//                 from: 'blogs',
+//                 localField: 'blog',
+//                 foreignField: '_id',
+//                 as: 'blogData',
+//               },
+//         },
+//         {
+//               $match: {
+//                 'blogData.owner':userId,
+//               },
+//         },
+//         {
+//           $group:{
+//             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+//             commentCount: { $sum: 1 }
+//           }
+//         }
+//       ])
+
+//       const  result =[]
+
+//       const ifDateExist =(_id)=> result.find(item=>item._id === _id)
+
+//       for(const item of likesArray){
+//         const ifExist = ifDateExist(item._id);
+    
+//         if(ifExist){
+//             ifExist.likeCount = item.likeCount
+//         }else{
+//             result.push({_id: item._id, likeCount: item.likeCount,commentCount:0})
+//         }
+//     }
+
+
+//     for(const item of commentsArray){
+//         const ifExist = ifDateExist(item._id);
+    
+//         if(ifExist){
+//             ifExist.commentCount = item.commentCount
+//         }else{
+//             result.push({_id: item._id,likeCount:0, commentCount: item.commentCount})
+//         }
+//     }
+
+
+
+//     //   const counts = [...likesArray,...commentsArray]
+ 
+
+//      return res.status(200).json(result)
+//     // res.status(200).json({likesArray,commentsArray})
+
+    
+
+// });
+
 const getUserLikesAndCommentsCount = asyncHandler(async (req, res) => {
     const fromDate = req?.query?.from;
     const toDate = req?.query?.to;
     const userId = req?.user?._id;
     const toDateObj = new Date(toDate);
     toDateObj.setHours(23, 59, 59, 999);
- 
-      const likesArray = await  Like.aggregate([
+
+    const likesArray = await Like.aggregate([
         {
-          $match: {
-            createdAt:{
-              $gte: new Date(fromDate),
-              $lte: new Date(toDateObj),
+            $match: {
+                createdAt: {
+                    $gte: new Date(fromDate),
+                    $lte: new Date(toDateObj),
+                }
             }
-          }
         },
         {
             $lookup: {
@@ -326,29 +430,29 @@ const getUserLikesAndCommentsCount = asyncHandler(async (req, res) => {
                 localField: 'blog',
                 foreignField: '_id',
                 as: 'blogData',
-              },
+            },
         },
         {
-              $match: {
-                'blogData.owner':userId,
-              },
+            $match: {
+                'blogData.owner': userId,
+            },
         },
         {
-          $group:{
-            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-            likeCount: { $sum: 1 }
-          }
-        }
-      ])
-      
-      const commentsArray = await Comment.aggregate([
-        {
-          $match: {
-            createdAt:{
-              $gte: new Date(fromDate),
-              $lte: new Date(toDateObj),
+            $group: {
+                _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                likeCount: { $sum: 1 }
             }
-          }
+        }
+    ]);
+
+    const commentsArray = await Comment.aggregate([
+        {
+            $match: {
+                createdAt: {
+                    $gte: new Date(fromDate),
+                    $lte: new Date(toDateObj),
+                }
+            }
         },
         {
             $lookup: {
@@ -356,57 +460,44 @@ const getUserLikesAndCommentsCount = asyncHandler(async (req, res) => {
                 localField: 'blog',
                 foreignField: '_id',
                 as: 'blogData',
-              },
+            },
         },
         {
-              $match: {
-                'blogData.owner':userId,
-              },
+            $match: {
+                'blogData.owner': userId,
+            },
         },
         {
-          $group:{
-            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-            commentCount: { $sum: 1 }
-          }
+            $group: {
+                _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                commentCount: { $sum: 1 }
+            }
         }
-      ])
+    ]);
 
-      const  result =[]
+    const countsArray = [...likesArray, ...commentsArray];
 
-      const ifDateExist =(_id)=> result.find(item=>item._id === _id)
+    const countsMap = {};
 
-      for(const item of likesArray){
-        const ifExist = ifDateExist(item._id);
-    
-        if(ifExist){
-            ifExist.likeCount = item.likeCount
-        }else{
-            result.push({_id: item._id, likeCount: item.likeCount,commentCount:0})
-        }
+    const currentDate = new Date(fromDate);
+    const endDate = new Date(toDate);
+    while (currentDate <= endDate) {
+        countsMap[currentDate.toISOString().slice(0, 10)] = { likeCount: 0, commentCount: 0 };
+        currentDate.setDate(currentDate.getDate() + 1);
     }
 
-
-    for(const item of commentsArray){
-        const ifExist = ifDateExist(item._id);
-    
-        if(ifExist){
-            ifExist.commentCount = item.commentCount
-        }else{
-            result.push({_id: item._id,likeCount:0, commentCount: item.commentCount})
+    countsArray.forEach(item => {
+        const date = item._id;
+        if (countsMap[date]) {
+            countsMap[date] = { ...countsMap[date], ...item };
         }
-    }
+    });
 
+    const result = Object.entries(countsMap).map(([date, counts]) => ({ _id: date, ...counts }));
 
-
-    //   const counts = [...likesArray,...commentsArray]
- 
-
-     return res.status(200).json(result)
-    // res.status(200).json({likesArray,commentsArray})
-
-    
-
+    return res.status(200).json(result);
 });
+
 
 export { registerUser,
         loginUser,
