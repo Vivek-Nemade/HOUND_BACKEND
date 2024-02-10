@@ -144,28 +144,32 @@ const loginUser = asyncHandler(async (req, res) =>{
 })
 
 const logoutUser=asyncHandler(async (req, res) =>{
-    const id = req?.user?._id
-    await User.findByIdAndUpdate(
-        id,
-        {
-           $unset:{
-            refreshToken: 1,  // removes the refresh token from the user object
-           }
-        },
-        {
-            new: true
-        }
-        )
-
-    const options = {
-        httpOnly : true,
-        secure : true
-    }
+    try {
+        const id = req?.user?._id
+        await User.findByIdAndUpdate(
+            id,
+            {
+               $unset:{
+                refreshToken: 1,  // removes the refresh token from the user object
+               }
+            },
+            {
+                new: true
+            }
+            )
     
-    return res.status(200)
-              .clearCookie("accessToken",options)
-              .clearCookie("refreshToken",options)
-              .json("User Logged Out")
+        const options = {
+            httpOnly : true,
+            secure : true
+        }
+        
+        return res.status(200)
+                  .clearCookie("accessToken",options)
+                  .clearCookie("refreshToken",options)
+                  .json({sucess:true,message:"User Logged Out"})
+    } catch (error) {
+        return res.status(500).json({message:error.message, sucess: false})
+    }
 })
 
 const getUser = asyncHandler(async (req,res) =>{
@@ -174,6 +178,26 @@ const getUser = asyncHandler(async (req,res) =>{
     // console.log(user.username)
     return res.status(200).json({user, valid:true});
 });
+
+const updatePassword = asyncHandler(async (req, res) =>{
+    try {
+        const userId = req.user?._id;
+        const {oldPassword,newPassword} = req.body;
+        
+        const user = await User.findOne({_id:req?.user?._id}).select("-refreshToken")
+        const isPasswordValid = await user.isPasswordCorrect(oldPassword)
+        
+        if(!isPasswordValid){
+            res.status(401); throw new Error("Invalid Credentials")
+        }
+        user.password = newPassword;
+        await user.save({ validateBeforeSave: false });
+    
+        return res.status(200).json({sucess:true, message:"Password changed Sucessfully"})
+    } catch (error) {
+        return res.status(500).json(error.message)
+    }
+})
 
 const uploadUserimages=asyncHandler(async (req,res) =>{
     const userID = req.user?._id;
@@ -507,4 +531,5 @@ export { registerUser,
         updateUserData,
         refreshAcessToken,
         getUserByParams,
+        updatePassword,
         getUserLikesAndCommentsCount}
