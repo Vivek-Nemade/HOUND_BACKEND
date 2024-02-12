@@ -1,8 +1,9 @@
 import express from "express";
 import { verifyJwt } from "../middlewares/auth.middelware.js";
-import { createBlog, deleteBlog, getAllBlogs, getBlog, getCurrentUserBlogs, updateBlog } from "../controllers/blog.controller.js";
+import { createBlog, deleteBlog, getAllBlogs, getBlog, getCurrentUserBlogs, updateBlog, uploadImages } from "../controllers/blog.controller.js";
 import { getBlogLikeStatusOfLoggedInUser, likeUnlikeBlog } from "../controllers/like.controller.js";
 import { addComment, deleteComment, getBlogComments, updateComment } from "../controllers/comment.controller.js";
+import { upload } from "../middlewares/multer.middleware.js";
 const router = express.Router();
 
 //Blogs Routes
@@ -12,6 +13,7 @@ router.route("/update/:blogId").patch(verifyJwt,updateBlog)
 router.route("/allBlogs").get(getAllBlogs)
 router.route("/allBlogs/:blogId").get(verifyJwt,getBlog)
 router.route("/currrent-blog/:blogId").delete(verifyJwt,deleteBlog)
+router.route("/uploadJodit-images").post(upload.fields([{name: "image"}]),uploadImages)
 
 //Likes Routes
 router.route("/currrent-blog/:blogId").patch(verifyJwt,likeUnlikeBlog)
