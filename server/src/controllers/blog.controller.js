@@ -1,6 +1,7 @@
 
 import { Blog } from "../models/blog.model.js";
 import { asyncHandler } from "../utils/asynchandler.js";
+import { uploadCloudinary } from "../utils/cloudinary.js";
 
 const createBlog = asyncHandler(async(req,res)=>{
     const {title, description,category} = req.body;
@@ -132,8 +133,22 @@ const deleteBlog = asyncHandler(async (req, res) => {
 
 
 });
+const uploadImages=asyncHandler(async (req,res) =>{
+    try {
+        const localImagePath = req.files?.image[0]?.path;
+    
+        const localImage =  await uploadCloudinary(localImagePath)
+        if(localImage){
+            res.send(localImage.url).json();
+            return res.status(200)
+        }
+    } catch (error) {
+        console.error(error.message);
+        return res.status(500).json(error.message);
+    }
+});
 
 
 
 
-export {createBlog,getCurrentUserBlogs,getAllBlogs,updateBlog,getBlog,deleteBlog}
+export {createBlog,getCurrentUserBlogs,getAllBlogs,updateBlog,getBlog,deleteBlog, uploadImages}
