@@ -27,6 +27,10 @@ const blogSchema = new Schema({
     visitedCount:{
         type: Number,
         default: 0
+    },
+    category:{
+        type: String,
+        required: true
     }
 },{timestamps: true})
 
