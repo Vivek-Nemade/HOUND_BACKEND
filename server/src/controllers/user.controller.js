@@ -39,7 +39,7 @@ const generateUserId = async () => {
 const registerUser = asyncHandler( async (req,res)=>{
 
     const {userName, email, password,fullName} =req.body;
-    console.log(email,password)
+    console.log(userName, email, password,fullName)
 
     if([userName, email, password,fullName].some((field)=> field?.trim()==="")){
         res.status(400); throw new Error("All fields must be filled")
@@ -48,9 +48,9 @@ const registerUser = asyncHandler( async (req,res)=>{
     const existingUser = await User.findOne({
         $or: [{userName, email}]
     })
-
+    console.log("existingUser", existingUser)
     if(existingUser){
-        res.status(409); throw new Error("User already exists")
+        res.status(409).json({ error: 'User already exists' });
     }
     console.log(req.files)
 //    const localProfileImagePath = req.files?.profileImage[0]?.path;
@@ -102,13 +102,14 @@ const loginUser = asyncHandler(async (req, res) =>{
     const user = await User.findOne({email});
 
     if(!user){
-        res.status(401); throw new Error("User not found")
+        res.status(401).json({ error: 'User not found' });
     }
 
     const isPasswordValid = await user.isPasswordCorrect(password)
 
     if(!isPasswordValid){
-        res.status(401); throw new Error("Invalid Credentials")
+        // res.status(401); throw new Error("Invalid Credentials")
+        res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const {accessToken, refreshToken} = await generateRefreshAccessToken(user._id)
@@ -236,7 +237,7 @@ const uploadUserimages=asyncHandler(async (req,res) =>{
 });
 
 const updateUserData = asyncHandler(async(req,res)=>{
-    const {github,linkedln,youtube,website,twitter,bio,userName,email,fullName } = req.body;
+    const {github,linkedIn,youtube,website,twitter,bio,userName,email,fullName } = req.body;
     const currentUserId = req.user?._id;
 
     if(!currentUserId) {
@@ -250,7 +251,7 @@ const updateUserData = asyncHandler(async(req,res)=>{
                     email,
                     fullName,
                     github,
-                    linkedln,
+                    linkedIn,
                     youtube,
                     website,
                     twitter,

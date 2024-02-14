@@ -4,7 +4,7 @@ import { asyncHandler } from "../utils/asynchandler.js";
 import { uploadCloudinary } from "../utils/cloudinary.js";
 
 const createBlog = asyncHandler(async(req,res)=>{
-    const {title, description} = req.body;
+    const {title, description,category} = req.body;
     const userId = req.user._id;
 
     if(!(title || description)){
@@ -15,6 +15,7 @@ const createBlog = asyncHandler(async(req,res)=>{
         title,
         description,
         owner: userId,
+        category
     })
 
     return res.status(200).json({sucess: true, data: blog,message:"Blog created successfully"})
@@ -37,15 +38,17 @@ const getAllBlogs = asyncHandler(async(req,res)=>{
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = 5;
+        const category = req.query.category;
+        const filter = category ? { category } : {};
 
-        const blogs = await Blog.find({})
+        const blogs = await Blog.find(filter)
         .populate({path:"owner",select:"userName profileImage"})
         .sort({createdAt:-1})
         .skip((page-1)*limit)
         .limit(limit)
 
 
-        const count = await Blog.countDocuments();
+        const count = await Blog.countDocuments(filter);
         const totalPages = Math.ceil(count / limit);
         const currentLength = blogs.length;
         // console.log(blogs)
@@ -65,7 +68,7 @@ const getAllBlogs = asyncHandler(async(req,res)=>{
 const updateBlog = asyncHandler(async(req,res)=>{
     const userId = req.user._id;
     const blogId =req.params?.blogId;
-    const {title , description} = req.body;
+    const {title , description,category} = req.body;
 
 
     const blogOwner = await Blog.findOne({owner: userId});
@@ -83,7 +86,8 @@ const updateBlog = asyncHandler(async(req,res)=>{
         {
             $set:{
                 title : title,
-                description : description
+                description : description,
+                category : category
             }
         },
         {
@@ -100,7 +104,7 @@ const getBlog = asyncHandler(async (req, res) => {
     const blogId =req.params?.blogId;
     const blog = await Blog
                        .findById(blogId)
-                       .populate({path:"owner",select:"userName profileImage"})
+                       .populate({path:"owner",select:"userName fullName profileImage"})
 
     if(!blog) {
         res.status(404).json("Blog not found")
