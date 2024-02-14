@@ -237,7 +237,7 @@ const uploadUserimages=asyncHandler(async (req,res) =>{
 });
 
 const updateUserData = asyncHandler(async(req,res)=>{
-    const {github,linkedln,youtube,website,twitter,bio,userName,email,fullName } = req.body;
+    const {github,linkedIn,youtube,website,twitter,bio,userName,email,fullName } = req.body;
     const currentUserId = req.user?._id;
 
     if(!currentUserId) {
@@ -251,7 +251,7 @@ const updateUserData = asyncHandler(async(req,res)=>{
                     email,
                     fullName,
                     github,
-                    linkedln,
+                    linkedIn,
                     youtube,
                     website,
                     twitter,

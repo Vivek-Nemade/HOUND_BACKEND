@@ -26,7 +26,7 @@ const userSchema = new Schema({
         unique : true,
         lowercase : true,
     },
-    linkedln: {
+    linkedIn: {
         type : String,
     },
     github: {
