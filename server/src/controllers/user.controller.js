@@ -117,11 +117,6 @@ const loginUser = asyncHandler(async (req, res) =>{
 
 
     const LoggedInUser = await User.findById(user._id).select("-password -refreshToken")
-
-    // if(req.cookies[`${user._id}`]){
-    //     console.log(user._id)
-    //     req.cookies[`${user._id}`]="";
-    // }
     const expiryDate = new Date(Date.now() + 3600000)
     const options = {
         httpOnly: true,
@@ -131,16 +126,9 @@ const loginUser = asyncHandler(async (req, res) =>{
 
     res
     // .cookie('accessToken', accessToken, {maxAge: 30000, httpOnly: true})
-    .cookie('accessToken', accessToken, {maxAge: 3000000, httpOnly: true})
+    .cookie('accessToken', accessToken, {maxAge: 3000000, httpOnly: true,secure: true, sameSite: 'None'})
     // .cookie("refreshToken", refreshToken, options)
-    .cookie("refreshToken", refreshToken, {maxAge: 86400000, httpOnly: true})
-    // return res.
-    //         status(200)
-    //         .cookie("accessToken", accessToken, options)
-    //         .cookie("refreshToken", refreshToken, options)
-    //         // .json(LoggedInUser + accessToken +refreshToken +"User logged in successfully")
-    //         .json({LoggedInUser})
-    // console.log(accessToken,"and",refreshToken)
+    .cookie("refreshToken", refreshToken, {maxAge: 86400000, httpOnly: true,secure: true, sameSite: 'None'})
     return res.status(200).json({LoggedInUser})
 })
 
