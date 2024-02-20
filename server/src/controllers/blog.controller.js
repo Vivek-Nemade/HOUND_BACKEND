@@ -42,7 +42,7 @@ const getAllBlogs = asyncHandler(async(req,res)=>{
         const filter = category ? { category } : {};
 
         const blogs = await Blog.find(filter)
-        .populate({path:"owner",select:"userName profileImage"})
+        .populate({path:"owner",select:"userName fullName profileImage"})
         .sort({createdAt:-1})
         .skip((page-1)*limit)
         .limit(limit)

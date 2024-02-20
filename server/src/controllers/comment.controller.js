@@ -43,7 +43,7 @@ const getBlogComments = asyncHandler(async(req,res)=>{
         return res.status(404).json("Blog not found")
     }
 
-    const allComments = await Comment.find({blog: blogId}).populate({path:"commentBy", select:"userName profileImage"}).sort({createdAt:-1})
+    const allComments = await Comment.find({blog: blogId}).populate({path:"commentBy", select:"userName fullName profileImage"}).sort({createdAt:-1})
     // console.log(allComments)
                             
 
