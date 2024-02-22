@@ -8,7 +8,7 @@ const app = express();
 
 app.use(cors({
     credentials: true,
-    origin: 'https://hound-frontend-service.vercel.app',
+    origin: ['https://hound-frontend-service.vercel.app','http://localhost:3000'],
     // origin: 'http://localhost:3000',
 }));
 // app.use(cors())
