@@ -39,7 +39,7 @@ const generateUserId = async () => {
 const registerUser = asyncHandler( async (req,res)=>{
 
     const {userName, email, password,fullName} =req.body;
-    console.log(userName, email, password,fullName)
+    // console.log(userName, email, password,fullName)
 
     if([userName, email, password,fullName].some((field)=> field?.trim()==="")){
         res.status(400); throw new Error("All fields must be filled")
@@ -52,23 +52,7 @@ const registerUser = asyncHandler( async (req,res)=>{
     if(existingUser){
         res.status(409).json({ error: 'User already exists' });
     }
-    console.log(req.files)
-//    const localProfileImagePath = req.files?.profileImage[0]?.path;
-//    console.log(localProfileImagePath)
-//    const localCoverImagePath = req.files?.coverImage[0]?.path;
-
-//    if(!localProfileImagePath){
-//     res.status(400); throw new Error("Profile Image is required")
-//    }
-
-
-//    const profileImage =  await uploadCloudinary(localProfileImagePath)
-//    const coverImage = await uploadCloudinary(localCoverImagePath)
-
-//    if(!profileImage){
-//     res.status(400); throw new Error("Profile Image is required")
-//    }
-//    console.log(username, email,profileImage,coverImage,password)
+    // console.log(req.files)
 
    const userId = await generateUserId()
 
@@ -193,8 +177,8 @@ const uploadUserimages=asyncHandler(async (req,res) =>{
     try {
         const localProfileImagePath = req.files?.profileImage[0]?.path;
         const localCoverImagePath = req.files?.coverImage?.[0]?.path;
-        console.log(localProfileImagePath);
-        console.log(localCoverImagePath);
+        // console.log(localProfileImagePath);
+        // console.log(localCoverImagePath);
     
         const profileImage =  await uploadCloudinary(localProfileImagePath)
         let coverImage;
@@ -283,18 +267,9 @@ const refreshAcessToken =asyncHandler (async(req,res)=>{
         
                 exist = true
     
-    // catch(error){
-    //     console.error('Error refreshing access token:', error);
-    //     return res.status(401).json({ error: error.message, valid: false });
-    // }  
-        
-
-        
-    
     // console.log(exist)
     return exist;
-            // res.status(401); throw new Error("Invalid token")
-            // return res.status(401).json({error: error.message, exists: false});
+          
     })
 
 const getUserByParams = asyncHandler(async (req, res) => {
@@ -317,109 +292,7 @@ const getUserByParams = asyncHandler(async (req, res) => {
 })
 
 
-// const getUserLikesAndCommentsCount = asyncHandler(async (req, res) => {
-//     const fromDate = req?.query?.from;
-//     const toDate = req?.query?.to;
-//     const userId = req?.user?._id;
-//     const toDateObj = new Date(toDate);
-//     toDateObj.setHours(23, 59, 59, 999);
- 
-//       const likesArray = await  Like.aggregate([
-//         {
-//           $match: {
-//             createdAt:{
-//               $gte: new Date(fromDate),
-//               $lte: new Date(toDateObj),
-//             }
-//           }
-//         },
-//         {
-//             $lookup: {
-//                 from: 'blogs',
-//                 localField: 'blog',
-//                 foreignField: '_id',
-//                 as: 'blogData',
-//               },
-//         },
-//         {
-//               $match: {
-//                 'blogData.owner':userId,
-//               },
-//         },
-//         {
-//           $group:{
-//             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-//             likeCount: { $sum: 1 }
-//           }
-//         }
-//       ])
-      
-//       const commentsArray = await Comment.aggregate([
-//         {
-//           $match: {
-//             createdAt:{
-//               $gte: new Date(fromDate),
-//               $lte: new Date(toDateObj),
-//             }
-//           }
-//         },
-//         {
-//             $lookup: {
-//                 from: 'blogs',
-//                 localField: 'blog',
-//                 foreignField: '_id',
-//                 as: 'blogData',
-//               },
-//         },
-//         {
-//               $match: {
-//                 'blogData.owner':userId,
-//               },
-//         },
-//         {
-//           $group:{
-//             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-//             commentCount: { $sum: 1 }
-//           }
-//         }
-//       ])
 
-//       const  result =[]
-
-//       const ifDateExist =(_id)=> result.find(item=>item._id === _id)
-
-//       for(const item of likesArray){
-//         const ifExist = ifDateExist(item._id);
-    
-//         if(ifExist){
-//             ifExist.likeCount = item.likeCount
-//         }else{
-//             result.push({_id: item._id, likeCount: item.likeCount,commentCount:0})
-//         }
-//     }
-
-
-//     for(const item of commentsArray){
-//         const ifExist = ifDateExist(item._id);
-    
-//         if(ifExist){
-//             ifExist.commentCount = item.commentCount
-//         }else{
-//             result.push({_id: item._id,likeCount:0, commentCount: item.commentCount})
-//         }
-//     }
-
-
-
-//     //   const counts = [...likesArray,...commentsArray]
- 
-
-//      return res.status(200).json(result)
-//     // res.status(200).json({likesArray,commentsArray})
-
-    
-
-// });
 
 const getUserLikesAndCommentsCount = asyncHandler(async (req, res) => {
     const fromDate = req?.query?.from;

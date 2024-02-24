@@ -81,25 +81,6 @@ export {likeUnlikeBlog,Likedblogs,getBlogLikeStatusOfLoggedInUser}
 
 
 
-// {
-//     $lookup: {
-//       from: 'blogs',
-//       localField: 'blog',
-//       foreignField: '_id',
-//       as: "blog_details"
-//     }
-//   },
-//   {
-//     $addFields: {
-//       blog_details: {
-//         $arrayElemAt: ["$blog_details", 0]
-//       }
-//     }
-//   }
-
-
-
-
 
 //working likesCount per day 
 [
