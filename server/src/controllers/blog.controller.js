@@ -39,7 +39,7 @@ const getAllBlogs = asyncHandler(async(req,res)=>{
         const page = parseInt(req.query.page) || 1;
         const limit = 5;
         const category = req.query.category;
-        const filter = category ? { category } : {};
+        const filter = category && category !=='All' ? { category } : {};
 
         const blogs = await Blog.find(filter)
         .populate({path:"owner",select:"userName fullName profileImage"})
