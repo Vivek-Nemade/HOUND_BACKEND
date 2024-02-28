@@ -111,9 +111,23 @@ const loginUser = asyncHandler(async (req, res) =>{
 
     res
     // .cookie('accessToken', accessToken, {maxAge: 30000, httpOnly: true})
-    .cookie('accessToken', accessToken, {maxAge: expireLimit, httpOnly: true,secure: true, sameSite: 'None'})
+    .cookie('accessToken',
+             accessToken, 
+             {
+                maxAge: 2 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: true,
+                sameSite: 'None'
+            })
     // .cookie("refreshToken", refreshToken, options)
-    .cookie("refreshToken", refreshToken, {maxAge: 86400000, httpOnly: true,secure: true, sameSite: 'None'})
+    .cookie("refreshToken",
+             refreshToken, 
+             {
+                maxAge: 86400000, 
+                httpOnly: true,
+                secure: true, 
+                sameSite: 'None'
+            })
     return res.status(200).json({LoggedInUser})
 })
 
@@ -134,7 +148,8 @@ const logoutUser=asyncHandler(async (req, res) =>{
     
         const options = {
             httpOnly : true,
-            secure : true
+            secure : true,
+            sameSite: 'None'
         }
         
         return res.status(200)
@@ -262,9 +277,9 @@ const refreshAcessToken =asyncHandler (async(req,res)=>{
         
          res.
                 status(200)
-                .cookie("accessToken",accessToken,{maxAge: expireLimit, httpOnly: true})
+                .cookie("accessToken",accessToken,{maxAge: 2 * 60 * 60 * 1000, httpOnly: true,secure: true, sameSite: 'None'})
                 // .cookie("accessToken",accessToken,{maxAge: 30000, httpOnly: true})
-                .cookie("refreshToken",refreshToken,{maxAge: 86400000, httpOnly: true})
+                .cookie("refreshToken",refreshToken,{maxAge: 86400000, httpOnly: true,secure: true, sameSite: 'None'})
                 .json({ message: 'Access Token Refreshed', valid: true })
         
                 exist = true
