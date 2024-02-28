@@ -110,7 +110,7 @@ const loginUser = asyncHandler(async (req, res) =>{
 
     res
     // .cookie('accessToken', accessToken, {maxAge: 30000, httpOnly: true})
-    .cookie('accessToken', accessToken, {maxAge: 3000000, httpOnly: true,secure: true, sameSite: 'None'})
+    .cookie('accessToken', accessToken, {maxAge: 7200000, httpOnly: true,secure: true, sameSite: 'None'})
     // .cookie("refreshToken", refreshToken, options)
     .cookie("refreshToken", refreshToken, {maxAge: 86400000, httpOnly: true,secure: true, sameSite: 'None'})
     return res.status(200).json({LoggedInUser})
@@ -260,7 +260,7 @@ const refreshAcessToken =asyncHandler (async(req,res)=>{
         
          res.
                 status(200)
-                .cookie("accessToken",accessToken,{maxAge: 3000000, httpOnly: true})
+                .cookie("accessToken",accessToken,{maxAge: 7200000, httpOnly: true})
                 // .cookie("accessToken",accessToken,{maxAge: 30000, httpOnly: true})
                 .cookie("refreshToken",refreshToken,{maxAge: 86400000, httpOnly: true})
                 .json({ message: 'Access Token Refreshed', valid: true })
