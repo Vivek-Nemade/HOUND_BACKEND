@@ -68,7 +68,7 @@ const registerUser = asyncHandler( async (req,res)=>{
 
    const createdUser= await User.findById(user.id).select("-password -refreshToken");
    if(!createdUser){
-    res.status(500); throw new Error("Error creating user")
+    res.status(500).json({ error: 'Error creating user' });
    }
 
     return res.status(201).json(createdUser); 
@@ -161,14 +161,14 @@ const updatePassword = asyncHandler(async (req, res) =>{
         const isPasswordValid = await user.isPasswordCorrect(oldPassword)
         
         if(!isPasswordValid){
-            res.status(401); throw new Error("Invalid Credentials")
+            res.status(401).json({ error: 'Invalid credentials' });
         }
         user.password = newPassword;
         await user.save({ validateBeforeSave: false });
     
         return res.status(200).json({sucess:true, message:"Password changed Sucessfully"})
     } catch (error) {
-        return res.status(500).json(error.message)
+        return res.status(500).json({sucess:false, error:"Invalid credentials"})
     }
 })
 
