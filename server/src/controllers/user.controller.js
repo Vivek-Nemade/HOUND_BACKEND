@@ -101,6 +101,7 @@ const loginUser = asyncHandler(async (req, res) =>{
 
 
     const LoggedInUser = await User.findById(user._id).select("-password -refreshToken")
+    const expireLimit = 2 * 60 * 60 * 1000;
     const expiryDate = new Date(Date.now() + 3600000)
     const options = {
         httpOnly: true,
@@ -110,7 +111,7 @@ const loginUser = asyncHandler(async (req, res) =>{
 
     res
     // .cookie('accessToken', accessToken, {maxAge: 30000, httpOnly: true})
-    .cookie('accessToken', accessToken, {maxAge: 7200000, httpOnly: true,secure: true, sameSite: 'None'})
+    .cookie('accessToken', accessToken, {maxAge: expireLimit, httpOnly: true,secure: true, sameSite: 'None'})
     // .cookie("refreshToken", refreshToken, options)
     .cookie("refreshToken", refreshToken, {maxAge: 86400000, httpOnly: true,secure: true, sameSite: 'None'})
     return res.status(200).json({LoggedInUser})
@@ -257,10 +258,11 @@ const refreshAcessToken =asyncHandler (async(req,res)=>{
             const {accessToken, refreshToken} = await generateRefreshAccessToken(user._id)
         console.log(`new refresh token: ${refreshToken}`)
         console.log(`new access token: ${accessToken}`)
+        const expireLimit = 2 * 60 * 60 * 1000;
         
          res.
                 status(200)
-                .cookie("accessToken",accessToken,{maxAge: 7200000, httpOnly: true})
+                .cookie("accessToken",accessToken,{maxAge: expireLimit, httpOnly: true})
                 // .cookie("accessToken",accessToken,{maxAge: 30000, httpOnly: true})
                 .cookie("refreshToken",refreshToken,{maxAge: 86400000, httpOnly: true})
                 .json({ message: 'Access Token Refreshed', valid: true })
