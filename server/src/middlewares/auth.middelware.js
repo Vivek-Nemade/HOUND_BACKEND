@@ -30,7 +30,7 @@ export const verifyJwt =async(req, res, next) => {
         
             const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
             if(!user){
-                res.status(401); throw new Error("Invalid token")
+                res.status(401).json("Invalid Token");
             }
                 req.user = user;
             // console.log(req.user)

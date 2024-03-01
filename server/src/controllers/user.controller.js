@@ -114,6 +114,7 @@ const loginUser = asyncHandler(async (req, res) =>{
     .cookie('accessToken',
              accessToken, 
              {
+                // maxAge: 30000,
                 maxAge: 2 * 60 * 60 * 1000,
                 httpOnly: true,
                 secure: true,
@@ -273,17 +274,24 @@ const refreshAcessToken =asyncHandler (async(req,res)=>{
             const {accessToken, refreshToken} = await generateRefreshAccessToken(user._id)
         console.log(`new refresh token: ${refreshToken}`)
         console.log(`new access token: ${accessToken}`)
+
+        const decodedAccessToken = jwt.verify(accessToken,process.env.ACCESS_TOKEN_SECRET)
+        const refreshedUser = await User.findById(decodedAccessToken?._id).select("-password -refreshToken")
+       
         const expireLimit = 2 * 60 * 60 * 1000;
         
          res.
                 status(200)
-                .cookie("accessToken",accessToken,{maxAge: 2 * 60 * 60 * 1000, httpOnly: true,secure: true, sameSite: 'None'})
+                .cookie("accessToken",accessToken,{
+                    maxAge: 2 * 60 * 60 * 1000, 
+                    // maxAge: 60000,
+                    httpOnly: true,secure: true, sameSite: 'None'})
                 // .cookie("accessToken",accessToken,{maxAge: 30000, httpOnly: true})
                 .cookie("refreshToken",refreshToken,{maxAge: 86400000, httpOnly: true,secure: true, sameSite: 'None'})
-                .json({ message: 'Access Token Refreshed', valid: true })
+                .json({ message: 'Access Token Refreshed', valid1: true })
         
                 exist = true
-    
+                req.user = refreshedUser;
     // console.log(exist)
     return exist;
           
@@ -318,87 +326,91 @@ const getUserLikesAndCommentsCount = asyncHandler(async (req, res) => {
     const toDateObj = new Date(toDate);
     toDateObj.setHours(23, 59, 59, 999);
 
-    const likesArray = await Like.aggregate([
-        {
-            $match: {
-                createdAt: {
-                    $gte: new Date(fromDate),
-                    $lte: new Date(toDateObj),
+    try {
+        const likesArray = await Like.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDateObj),
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'blogs',
+                    localField: 'blog',
+                    foreignField: '_id',
+                    as: 'blogData',
+                },
+            },
+            {
+                $match: {
+                    'blogData.owner': userId,
+                },
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                    likeCount: { $sum: 1 }
                 }
             }
-        },
-        {
-            $lookup: {
-                from: 'blogs',
-                localField: 'blog',
-                foreignField: '_id',
-                as: 'blogData',
+        ]);
+    
+        const commentsArray = await Comment.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDateObj),
+                    }
+                }
             },
-        },
-        {
-            $match: {
-                'blogData.owner': userId,
+            {
+                $lookup: {
+                    from: 'blogs',
+                    localField: 'blog',
+                    foreignField: '_id',
+                    as: 'blogData',
+                },
             },
-        },
-        {
-            $group: {
-                _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-                likeCount: { $sum: 1 }
-            }
-        }
-    ]);
-
-    const commentsArray = await Comment.aggregate([
-        {
-            $match: {
-                createdAt: {
-                    $gte: new Date(fromDate),
-                    $lte: new Date(toDateObj),
+            {
+                $match: {
+                    'blogData.owner': userId,
+                },
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                    commentCount: { $sum: 1 }
                 }
             }
-        },
-        {
-            $lookup: {
-                from: 'blogs',
-                localField: 'blog',
-                foreignField: '_id',
-                as: 'blogData',
-            },
-        },
-        {
-            $match: {
-                'blogData.owner': userId,
-            },
-        },
-        {
-            $group: {
-                _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-                commentCount: { $sum: 1 }
-            }
+        ]);
+    
+        const countsArray = [...likesArray, ...commentsArray];
+    
+        const countsMap = {};
+    
+        const currentDate = new Date(fromDate);
+        const endDate = new Date(toDate);
+        while (currentDate <= endDate) {
+            countsMap[currentDate.toISOString().slice(0, 10)] = { likeCount: 0, commentCount: 0 };
+            currentDate.setDate(currentDate.getDate() + 1);
         }
-    ]);
-
-    const countsArray = [...likesArray, ...commentsArray];
-
-    const countsMap = {};
-
-    const currentDate = new Date(fromDate);
-    const endDate = new Date(toDate);
-    while (currentDate <= endDate) {
-        countsMap[currentDate.toISOString().slice(0, 10)] = { likeCount: 0, commentCount: 0 };
-        currentDate.setDate(currentDate.getDate() + 1);
+    
+        countsArray.forEach(item => {
+            const date = item._id;
+            if (countsMap[date]) {
+                countsMap[date] = { ...countsMap[date], ...item };
+            }
+        });
+    
+        const result = Object.entries(countsMap).map(([date, counts]) => ({ _id: date, ...counts }));
+    
+        return res.status(200).json(result);
+    } catch (error) {
+        return res.status(500).json(error.message)
     }
-
-    countsArray.forEach(item => {
-        const date = item._id;
-        if (countsMap[date]) {
-            countsMap[date] = { ...countsMap[date], ...item };
-        }
-    });
-
-    const result = Object.entries(countsMap).map(([date, counts]) => ({ _id: date, ...counts }));
-
-    return res.status(200).json(result);
 });
 
 

@@ -57,13 +57,17 @@ const removeFollower = asyncHandler(async (req, res) => {
 
 const getFollowersAndFollowing = asyncHandler(async (req, res) => {
     const userId = req?.user?._id;
-
-    const followers = await Subscribe.find({following:userId}).select("follower")
-                                     .populate({path:"follower"})
-    const following = await Subscribe.find({follower:userId}).select("following")
-                                    .populate({path:"following"})
-
-    return res.status(200).json({followers,following})
+    try {
+        const followers = await Subscribe.find({following:userId}).select("follower")
+                                         .populate({path:"follower"})
+        const following = await Subscribe.find({follower:userId}).select("following")
+                                        .populate({path:"following"})
+        
+        return res.status(200).json({followers,following})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({error:error.message,error})
+    }
 
 })
 
